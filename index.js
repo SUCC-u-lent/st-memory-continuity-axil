@@ -101,116 +101,74 @@ async function onComputeConversation()
   if (ctx == undefined || ctx.chat == undefined) return;
 
   let currentNotes = getChatNotes() || "";
-  let valArray = [];
+  let messages = [];
+
+  const prompt = `
+Extract important long-term memories from the messages.
+
+Existing memories:
+{{NOTES}}
+
+Messages:
+{{MESSAGES}}
+
+Remember:
+- Character facts
+- Relationships
+- Important events
+- Decisions
+- Goals
+- Restrictions and limitations
+- Consequences of past actions
+- Important changes
+- Facts that prevent future contradictions
+
+Prioritize information that will matter later.
+
+Do not remember:
+- Casual dialogue
+- Minor actions
+- Descriptions
+- Temporary details
+- Unimportant information
+- Existing memories
+- Information not established by the messages
+
+Return:
+memories: an array of important new facts.
+`;
+
   for (let i = 0; i < ctx.chat.length; i++)
   {
     const element = ctx.chat[i];
 
     if (element == undefined) continue;
 
-    valArray.push(
+    messages.push(
       element.name + ": " + element.mes
     );
 
-    // Exactly 3 messages
-    if (valArray.length >= 3)
-    {
-      const conversation = valArray.join("\n");
+    if (messages.length < 3) continue;
 
-      const prompt = `
-      Extract important long-term memories from these 3 messages.
+    const requestPrompt = prompt
+      .replace("{{NOTES}}", currentNotes)
+      .replace("{{MESSAGES}}", messages.join("\n"));
 
-      Existing memories:
-      ${currentNotes || "None"}
-
-      Messages:
-      ${conversation}
-
-      Remember information that affects future story continuity, especially:
-      - Character facts
-      - Relationships
-      - Important events
-      - Decisions
-      - Goals
-      - Restrictions and limitations
-      - Consequences of past actions
-      - Important changes to characters or the situation
-
-      Prioritize facts that should prevent future responses from contradicting what happened.
-
-      Do not remember:
-      - Casual dialogue
-      - Minor actions
-      - Descriptions
-      - Temporary details
-      - Unimportant information
-      - Information already in existing memories
-      - Information that was not established
-
-      Return these fields:
-      memories: an array of important new facts.
-      `;
-      currentNotes = await sendRequest(
-        "qwen3:1.7b",
-        prompt,
-        0.2
-      );
-
-      console.log("Updated memory:", currentNotes);
-
-      // Start the next group of 3
-      valArray = [];
-    }
-  }
-
-  // Process remaining messages if there are 1-2 left
-  if (valArray.length > 0)
-  {
-    const conversation = valArray.join("\n");
-
-    const prompt = `
-    Extract important long-term memories from these 3 messages.
-
-    Existing memories:
-    ${currentNotes || "None"}
-
-    Messages:
-    ${conversation}
-
-    Remember information that affects future story continuity, especially:
-    - Character facts
-    - Relationships
-    - Important events
-    - Decisions
-    - Goals
-    - Restrictions and limitations
-    - Consequences of past actions
-    - Important changes to characters or the situation
-
-    Prioritize facts that should prevent future responses from contradicting what happened.
-
-    Do not remember:
-    - Casual dialogue
-    - Minor actions
-    - Descriptions
-    - Temporary details
-    - Unimportant information
-    - Information already in existing memories
-    - Information that was not established
-
-    Return these fields:
-    memories: an array of important new facts.
-    `;
-    currentNotes = await sendRequest(
+    const result = await sendRequest(
       "qwen3:1.7b",
-      prompt,
-      0.2
+      requestPrompt,
+      0.1
     );
 
-    console.log("Updated memory:", JSON.parse(currentNotes.response));
-  }
+    const data = JSON.parse(result);
 
-  // Save currentNotes here
+    if (data.memories != undefined)
+    {
+      currentNotes += "\n" + data.memories.join("\n");
+    }
+
+    messages = [];
+  }
 }
 
 jQuery(async () => {

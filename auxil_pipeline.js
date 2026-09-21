@@ -62,6 +62,7 @@ async function sendRequest(
             prompt: prompt,
             stream: false,
             format: "json",
+            keep_alive: "2m", // keep model alive for 2 minutes
             options: {
                 temperature: temperature
             }
