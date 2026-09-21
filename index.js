@@ -166,11 +166,11 @@ memories: an array of important new facts.
     );
 
     const data = JSON.parse(result.response);
-    console.log(data.memories, data["memories"])
+    console.log(data)
 
     if (data.memories != undefined)
     {
-      currentNotes += "\n" + data.memories.join("\n");
+      currentNotes += "\n" + data.memories.join("\n")
     }
 
     messages = [];
