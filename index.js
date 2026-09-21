@@ -56,7 +56,12 @@ async function onSendSample()
 
 eventSource.on(event_types.CHARACTER_MESSAGE_RENDERED, (message_index)=>{
   const ctx = getContext()
-  console.log(ctx)
+  if (ctx == undefined || ctx.chat == undefined) return;
+  const msg = ctx.chat[message_index]
+})
+
+eventSource.on(event_types.GENERATION_ENDED,(data)=>{
+  console.log("Generation Ended:", data)
 })
 
 jQuery(async () => {
