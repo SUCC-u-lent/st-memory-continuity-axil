@@ -160,7 +160,7 @@ memories: an array of important new facts.
       0.1
     );
 
-    const data = JSON.parse(result);
+    const data = JSON.parse(result.response);
 
     if (data.memories != undefined)
     {
