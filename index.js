@@ -170,7 +170,10 @@ memories: an array of important new facts.
 
     if (data.memories != undefined)
     {
-      currentNotes += "\n" + data.memories.join("\n")
+      currentNotes += "\n";
+      data.memories.forEach(obj=>{
+        currentNotes += "Type: "+obj.type+", Content: "+obj.content
+      })
     }
 
     messages = [];
