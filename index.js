@@ -54,7 +54,7 @@ async function onSendSample()
   )
 }
 
-eventSource.on(event_types.MESSAGE_RECEIVED, (data)=>{
+eventSource.on(event_types.CHARACTER_MESSAGE_RENDERED, (data)=>{
   console.log(data)
 })
 
