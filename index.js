@@ -54,8 +54,9 @@ async function onSendSample()
   )
 }
 
-eventSource.on(event_types.CHARACTER_MESSAGE_RENDERED, (data)=>{
-  console.log(data)
+eventSource.on(event_types.CHARACTER_MESSAGE_RENDERED, (message_index)=>{
+  const ctx = getContext()
+  console.log(ctx)
 })
 
 jQuery(async () => {
