@@ -1,10 +1,11 @@
 import { extension_settings, getContext, loadExtensionSettings } from "../../../extensions.js";
 
 const extensionName = "st-memory-continuity-axil";
-const extensionSettings = extension_settings[extensionName];
 function getURL()
 {
-    return (extensionSettings["url"] || "http://localhost:3000") + "/api/"
+    const extensionSettings = extension_settings[extensionName] || {}
+    const url = extensionSettings["url"] || "http://localhost:3000"
+    return url + "/api/"
 }
 
 function isOnline()
