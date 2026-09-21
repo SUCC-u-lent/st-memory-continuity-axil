@@ -61,6 +61,7 @@ async function sendRequest(
             model: model,
             prompt: prompt,
             stream: false,
+            format: "json",
             options: {
                 temperature: temperature
             }
