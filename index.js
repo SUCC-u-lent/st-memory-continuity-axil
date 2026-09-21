@@ -138,6 +138,10 @@ Return:
 memories: an array of important new facts.
 `;
 
+  const batchSize = getCtxLength()
+
+  const batchCount = Math.ceil(ctx.chat.length / batchSize);
+  let batchNumber = 0;
   for (let i = 0; i < ctx.chat.length; i++)
   {
     const element = ctx.chat[i];
@@ -148,7 +152,8 @@ memories: an array of important new facts.
       element.name + ": " + element.mes
     );
 
-    if (messages.length < 3) continue;
+    if (messages.length < batchSize) continue;
+    batchNumber = batchNumber + 1;
 
     const requestPrompt = prompt
       .replace("{{NOTES}}", currentNotes)
@@ -168,6 +173,7 @@ memories: an array of important new facts.
     }
 
     messages = [];
+    console.log("Building Conversation, current batch:",batchNumber+"/"+batchCount,"\nCurrent Notes:",currentNotes)
   }
 }
 
