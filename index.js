@@ -1,63 +1,71 @@
-// The main script for the extension
-// The following are examples of some basic extension functionality
-
-//You'll likely need to import extension_settings, getContext, and loadExtensionSettings from extensions.js
 import { extension_settings, getContext, loadExtensionSettings } from "../../../extensions.js";
+import { saveSettingsDebounced, eventSource, event_types } from "../../../../script.js";
+import { isOnline, sendRequest } from "./auxil_pipeline.js"
 
-//You'll likely need to import some other functions from the main script
-import { saveSettingsDebounced } from "../../../../script.js";
-
-// Keep track of where your extension is located, name should match repo name
-const extensionName = "st-extension-example";
+const extensionName = "st-memory-continuity-axil";
 const extensionFolderPath = `scripts/extensions/third-party/${extensionName}`;
 const extensionSettings = extension_settings[extensionName];
-const defaultSettings = {};
+const defaultSettings = {
+  url: "http://localhost:3000"
+};
 
+function getUrl()
+{
+  return extension_settings[extensionName]["url"] || "http://localhost:3000"
+}
 
- 
-// Loads the extension settings if they exist, otherwise initializes them to the defaults.
 async function loadSettings() {
-  //Create the settings if they don't exist
   extension_settings[extensionName] = extension_settings[extensionName] || {};
   if (Object.keys(extension_settings[extensionName]).length === 0) {
     Object.assign(extension_settings[extensionName], defaultSettings);
   }
 
-  // Updating settings in the UI
-  $("#example_setting").prop("checked", extension_settings[extensionName].example_setting).trigger("input");
+  $("#mca_url").val( getUrl() )
 }
 
-// This function is called when the extension settings are changed in the UI
-function onExampleInput(event) {
-  const value = Boolean($(event.target).prop("checked"));
-  extension_settings[extensionName].example_setting = value;
-  saveSettingsDebounced();
+function onURLInput(val)
+{
+  extension_settings[extensionName]["url"] = val.value
+  saveSettingsDebounced()
 }
 
-// This function is called when the button is clicked
-function onButtonClick() {
-  // You can do whatever you want here
-  // Let's make a popup appear with the checked setting
+async function onConnectTest()
+{
+  const result = await isOnline();
+  if (result)
+    toastr.info(
+      `Successfully Connected to auxil on url: ${extension_settings[extensionName]["url"]}!`,
+      "Connection Established"
+    )
+  else
+    toastr.error(
+      `Failed to connect to auxil on url: ${extension_settings[extensionName]["url"]}, please install Auxil and start it or change the url`,
+      "Connection Failed"
+    )
+}
+
+async function onSendSample()
+{
+  const response = await sendRequest("qwen3:1.7b", "Create a haiku about cheese", 0.7)
+  console.log(response.response)
   toastr.info(
-    `The checkbox is ${extension_settings[extensionName].example_setting ? "checked" : "not checked"}`,
-    "A popup appeared because you clicked the button!"
-  );
+    "Cheese Haiku: " + response.response,
+    "Response Recieved"
+  )
 }
 
-// This function is called when the extension is loaded
+eventSource.on(event_types.MESSAGE_RECEIVED, (data)=>{
+  console.log(data)
+})
+
 jQuery(async () => {
-  // This is an example of loading HTML from a file
   const settingsHtml = await $.get(`${extensionFolderPath}/example.html`);
-
-  // Append settingsHtml to extensions_settings
-  // extension_settings and extensions_settings2 are the left and right columns of the settings menu
-  // Left should be extensions that deal with system functions and right should be visual/UI related 
   $("#extensions_settings").append(settingsHtml);
+  $("#mca_url").on("input", onURLInput)
+  $("#mca_connect").on("click", onConnectTest)
+  $("#mca_send_sample").on("click", onSendSample)
+  // Actual code stuff
 
-  // These are examples of listening for events
-  $("#my_button").on("click", onButtonClick);
-  $("#example_setting").on("input", onExampleInput);
-
-  // Load settings when starting things up (if you have any)
+  // At end
   loadSettings();
 });
