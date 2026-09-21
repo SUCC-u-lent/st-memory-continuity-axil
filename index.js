@@ -166,7 +166,7 @@ memories: an array of important new facts.
     );
 
     const data = JSON.parse(result.response);
-    console.log(result,data)
+    console.log(data.memories, data["memories"])
 
     if (data.memories != undefined)
     {
